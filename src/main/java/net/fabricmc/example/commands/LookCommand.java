@@ -8,7 +8,7 @@ import net.fabricmc.example.movement.PlayerManipulator;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 
-public class LookCommand {
+public class LookCommand{
 
     public LookCommand() {};
 
@@ -20,6 +20,5 @@ public class LookCommand {
         ServerCommandSource serverCommandSource = (ServerCommandSource) context.getSource();
         PlayerEntity player = serverCommandSource.getEntity().getCommandSource().getPlayer();
         return 1;
-
     }
 }

@@ -5,9 +5,11 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.example.ExampleMod;
 import net.fabricmc.example.movement.CardinalDirection;
+import net.fabricmc.example.movement.MovementDirection;
 import net.fabricmc.example.movement.PlayerManipulator;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
+import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,9 +32,10 @@ public abstract class MouseMixin {
             if (PlayerManipulator.mouseInControl) {
                 ExampleMod.LOGGER.info("Mod is in control of mouse. Increment: " + PlayerManipulator.getYawIncrement());
                 client.player.changeLookDirection(PlayerManipulator.getYawIncrement(),0);
-                if (Math.round(client.player.getYaw()) == Math.round(PlayerManipulator.getDirectionToFace())) {
+                if (Math.abs(client.player.getYaw() - PlayerManipulator.getDirectionToFace()) <= PlayerManipulator.allowedYawDiscrepancy) {
                     ExampleMod.LOGGER.info("Process finished. Player angle reached: " + client.player.getYaw());
                     PlayerManipulator.mouseInControl = false;
+                    PlayerManipulator.addDirection(MovementDirection.FORWARD);
                 }
                 return;
             } else {

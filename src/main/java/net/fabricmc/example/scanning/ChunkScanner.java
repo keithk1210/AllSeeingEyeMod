@@ -1,6 +1,9 @@
 package net.fabricmc.example.scanning;
 
+import net.fabricmc.example.ExampleMod;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 
 public class ChunkScanner {
@@ -9,7 +12,7 @@ public class ChunkScanner {
 
     };
 
-    public static BlockPos scan(Object source) {
+    public static BlockPos chunkScan(Object source) {
         ServerCommandSource player = (ServerCommandSource) source;
 
         String playerBlock = player.getPlayer().getStackInHand(player.getPlayer().getActiveHand()).getItem().toString();
@@ -41,5 +44,43 @@ public class ChunkScanner {
             }
         }
         return null;
+    }
+
+    public static BlockPos circleScan(Object source,int diameter) {
+
+        ServerCommandSource serverCommandSource = (ServerCommandSource) source;
+
+        PlayerEntity player = serverCommandSource.getPlayer();
+
+        int playerX = player.getBlockX();
+        int playerZ = player.getBlockZ();
+        int y = player.getBlockY() - 1; //y below player's feet
+
+        String playerBlock = player.getStackInHand(player.getActiveHand()).getItem().toString();
+
+        System.out.println("Player is holding: " + playerBlock);
+
+        player.sendMessage(Text.literal("Searching for " + playerBlock + " in a " + (diameter/2) + " radius"));
+
+        for (int d = 1; d <= diameter; d += 2) {
+            for (double degrees = 0; degrees <  360; degrees += .5) {
+                double radians = degrees * (Math.PI/ 180);
+                int x = (int) Math.round((Math.sin(radians) * (d/2.0)) + playerX);
+                int z = (int) Math.round((Math.cos(radians) * (d / 2.0)) + playerZ);
+                String block = player.getWorld().getBlockState(new BlockPos(x,y,z)).getBlock().asItem().toString();
+                //log("Block at " + x + ", " + y + ", " + z + " is: " + block);
+                if (block.equals(playerBlock)) {
+                    log("Block was found at " + x + ", " + y + ", " + z + "!");
+                    player.sendMessage(Text.literal(playerBlock + " found at " + x + ", " + y + ", " + z));
+                    return new BlockPos(x,y,z);
+                }
+
+            }
+        }
+        return null;
+    }
+
+    private static void log(String string) {
+        ExampleMod.LOGGER.info("[ChunkScanner]: " + string);
     }
 }
