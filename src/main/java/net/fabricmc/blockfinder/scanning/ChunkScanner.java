@@ -54,27 +54,28 @@ public class ChunkScanner {
 
         int playerX = player.getBlockX();
         int playerZ = player.getBlockZ();
-        int y = player.getBlockY() - 1; //y below player's feet
+        int playerY = player.getBlockY() - 1; //y below player's feet
 
         String playerBlock = player.getStackInHand(player.getActiveHand()).getItem().toString();
 
         System.out.println("Player is holding: " + playerBlock);
 
-        player.sendMessage(Text.literal("Searching for " + playerBlock + " in a " + (diameter/2) + " radius"));
+        player.sendMessage(Text.literal("Searching for " + playerBlock + " in a " + (diameter / 2) + " radius"));
+        for (int y = playerY; y > -64; y--) {
+            for (int d = 1; d <= diameter; d += 2) {
+                for (double degrees = 0; degrees < 360; degrees += .5) {
+                    double radians = degrees * (Math.PI / 180);
+                    int x = (int) Math.round((Math.sin(radians) * (d / 2.0)) + playerX);
+                    int z = (int) Math.round((Math.cos(radians) * (d / 2.0)) + playerZ);
+                    String block = player.getWorld().getBlockState(new BlockPos(x, y, z)).getBlock().asItem().toString();
+                    //log("Block at " + x + ", " + y + ", " + z + " is: " + block);
+                    if (block.equals(playerBlock)) {
+                        log("Block was found at " + x + ", " + y + ", " + z + "!");
+                        player.sendMessage(Text.literal(playerBlock + " found at " + x + ", " + y + ", " + z));
+                        return new BlockPos(x, y, z);
+                    }
 
-        for (int d = 1; d <= diameter; d += 2) {
-            for (double degrees = 0; degrees <  360; degrees += .5) {
-                double radians = degrees * (Math.PI/ 180);
-                int x = (int) Math.round((Math.sin(radians) * (d/2.0)) + playerX);
-                int z = (int) Math.round((Math.cos(radians) * (d / 2.0)) + playerZ);
-                String block = player.getWorld().getBlockState(new BlockPos(x,y,z)).getBlock().asItem().toString();
-                //log("Block at " + x + ", " + y + ", " + z + " is: " + block);
-                if (block.equals(playerBlock)) {
-                    log("Block was found at " + x + ", " + y + ", " + z + "!");
-                    player.sendMessage(Text.literal(playerBlock + " found at " + x + ", " + y + ", " + z));
-                    return new BlockPos(x,y,z);
                 }
-
             }
         }
         return null;

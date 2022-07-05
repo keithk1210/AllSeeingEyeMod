@@ -2,6 +2,7 @@ package net.fabricmc.blockfinder;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.blockfinder.commands.AbortCommand;
 import net.fabricmc.blockfinder.commands.DrawCircleCommand;
 import net.fabricmc.blockfinder.commands.LookCommand;
 import net.fabricmc.blockfinder.commands.SearchCommand;
@@ -23,7 +24,6 @@ public class BlockFinder implements ModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger("modid");
 	public static final MinecraftClient client = MinecraftClient.getInstance();
-	private static HashSet<PlayerManipulator> playerManipulatorHashSet = new HashSet<>(); //TODO: figure out better place to put this hashet
 
 
 	@Override
@@ -31,7 +31,7 @@ public class BlockFinder implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-		//mycommand registration
+		//search registration
 		LOGGER.info("Hello Fabric world!");
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("search")
@@ -70,19 +70,15 @@ public class BlockFinder implements ModInitializer {
 						return DrawCircleCommand.runCommand(context,IntegerArgumentType.getInteger(context,"diameter"));
 			})));
 		})));
+		//abort command
+		CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(CommandManager.literal("abort").executes(context -> {
+				return AbortCommand.runCommand(context);
+			}));
+		}));
 
 	}
 
-	public static void addPlayerManipulatorToHashSet(PlayerEntity player) {
-		playerManipulatorHashSet.add(new PlayerManipulator(player));
-	}
 
-	public static PlayerManipulator getPlayerManipulatorFor(PlayerEntity player) {
-		for (PlayerManipulator pm : playerManipulatorHashSet) {
-			if (pm.getPlayer().equals(player)) {
-				return pm;
-			}
-		}
-		return null;
-	}
 }
+

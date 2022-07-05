@@ -27,8 +27,8 @@ public class SearchCommand {
             foundBlock = ChunkScanner.circleScan(context.getSource(),diameter);
         }
         if (foundBlock != null) {
-            double centerX = (foundBlock.getX() > 0) ? foundBlock.getX() + .5 : foundBlock.getX() - .5;
-            double centerZ = (foundBlock.getZ() > 0) ? foundBlock.getZ() + .5 : foundBlock.getZ() - .5;
+            double centerX = foundBlock.getX() + .5;
+            double centerZ =  foundBlock.getZ() + .5;
 
             BlockFinder.LOGGER.info("Block found at " + foundBlock.getX() + ", " + foundBlock.getZ() + "! Center coords are: " + centerX + ", " + centerZ + " (inside SearchCommand.runCommand()");
             BlockFinder.LOGGER.info("Player was at: " + player.getBlockX() + ", " + player.getBlockZ());
@@ -48,16 +48,12 @@ public class SearchCommand {
 
             BlockFinder.LOGGER.info("Setting ideal yaw increment: " + idealIncrement);
 
-            BlockFinder.addPlayerManipulatorToHashSet(player);
+            PlayerManipulator.setPlayer(player);
 
-            PlayerManipulator playerManipulator = BlockFinder.getPlayerManipulatorFor(player);
-
-            if (playerManipulator != null) {
-                playerManipulator.setYawIncrement(idealIncrement);
-                playerManipulator.setDirectionToFace(angle);
-                playerManipulator.mouseInControl = true;
-                playerManipulator.setDestination(new BlockPos(foundBlock.getX(), foundBlock.getY() + 1, foundBlock.getZ())); //add one to 1 because the player will end up on top of the block
-            }
+            PlayerManipulator.setYawIncrement(idealIncrement);
+            PlayerManipulator.setDirectionToFace(angle);
+            PlayerManipulator.lookDirectionInControl = true;
+            PlayerManipulator.setDestination(new BlockPos(foundBlock.getX(), foundBlock.getY() + 1, foundBlock.getZ())); //add one to 1 because the player will end up on top of the block
         }
         return 1;
     }

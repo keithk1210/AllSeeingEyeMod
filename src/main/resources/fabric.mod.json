@@ -3,8 +3,8 @@
   "id": "modid",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "BlockFinder",
+  "description": "A mod that moves the player towards a block",
   "authors": [
     "Me!"
   ],
@@ -19,7 +19,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.BlockFinder"
+      "net.fabricmc.blockfinder.BlockFinder"
     ]
   },
   "mixins": [
