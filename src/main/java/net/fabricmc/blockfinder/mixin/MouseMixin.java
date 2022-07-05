@@ -6,6 +6,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.blockfinder.BlockFinder;
 import net.fabricmc.blockfinder.movement.MovementDirection;
 import net.fabricmc.blockfinder.movement.PlayerManipulator;
+import net.fabricmc.blockfinder.utils.ProcessType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import org.spongepowered.asm.mixin.Final;
@@ -35,10 +36,12 @@ public abstract class MouseMixin {
                 BlockFinder.LOGGER.info("player yaw reset to: " + client.player.getYaw());
             }
 
-            if (PlayerManipulator.getLookDirectionInControl() && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
+            if (PlayerManipulator.getLookDirectionInControl() && PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_YAW && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
                 //BlockFinder.LOGGER.info("Mod is in control of mouse. Increment: " + PlayerManipulator.getYawIncrement());
+
                 double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees());
                 BlockFinder.LOGGER.info("yaw " + client.player.getYaw() + " PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() " + PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() + " difference " + difference);
+
                 if (difference <= 15) {
                     PlayerManipulator.setYawIncrementMultiplier(1);
                 }
@@ -48,11 +51,11 @@ public abstract class MouseMixin {
                 //BlockFinder.LOGGER.info("PlayerManipulator.mouseInControl: " + PlayerManipulator.lookDirectionInControl + " Player yaw: " + client.player.getYaw() + " Direction to face: " + PlayerManipulator.getDirectionToFace() + " Difference: " + difference);
                 if (difference <= 1) {
                     PlayerManipulator.setLookDirectionInControl(false);
+                    PlayerManipulator.setCurrentProcess(ProcessType.HORIZONTAL);
                     PlayerManipulator.addDirection(MovementDirection.FORWARD);
                     BlockFinder.LOGGER.info("PlayerManipulator.getDirections: " + PlayerManipulator.getHeadMovements());
                     if (PlayerManipulator.getHeadMovements().size() == 0) {
                         BlockFinder.LOGGER.info("Process finished. Player angle reached: " + client.player.getYaw());
-
                     } else {
                         PlayerManipulator.setYawIncrementMultiplier(10);
                     }
@@ -66,12 +69,13 @@ public abstract class MouseMixin {
 
     @Inject(method = "updateMouse", at = @At("HEAD"))
     private void updatePlayerPitch(CallbackInfo info) {
-        if (client.player != null && PlayerManipulator.getPitchInControl()) {
+        if (client.player != null && PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_PITCH) {
             if (client.player.getPitch() < 90) {
                 client.player.setPitch(client.player.getPitch() + 1);
             } else {
                 BlockFinder.LOGGER.info("Player reached pitch of: " + client.player.getPitch());
-                PlayerManipulator.setPitchInControl(false);
+                BlockFinder.LOGGER.info("Determining vertical process type...");
+                PlayerManipulator.determineVerticalProcessType();
             }
         }
     }

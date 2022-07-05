@@ -4,6 +4,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.blockfinder.BlockFinder;
 import net.fabricmc.blockfinder.movement.PlayerManipulator;
 import net.fabricmc.blockfinder.scanning.ChunkScanner;
+import net.fabricmc.blockfinder.utils.ProcessType;
 import net.fabricmc.blockfinder.utils.SearchType;
 import net.fabricmc.blockfinder.utils.Utils;
 import net.minecraft.entity.player.PlayerEntity;
@@ -30,7 +31,7 @@ public class SearchCommand {
             PlayerManipulator.setPlayer(player);
             PlayerManipulator.setLookDirectionInControl(true);
             PlayerManipulator.setDestination(new BlockPos(foundBlock.getX(), foundBlock.getY() + 1, foundBlock.getZ())); //add one to 1 because the player will end up on top of the block
-
+            PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
 
 
 

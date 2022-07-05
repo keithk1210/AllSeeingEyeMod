@@ -2,13 +2,15 @@ package net.fabricmc.blockfinder;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.blockfinder.commands.AbortCommand;
-import net.fabricmc.blockfinder.commands.DrawCircleCommand;
-import net.fabricmc.blockfinder.commands.LookCommand;
-import net.fabricmc.blockfinder.commands.SearchCommand;
+import net.fabricmc.blockfinder.commands.*;
+import net.fabricmc.blockfinder.holding.Holding;
 import net.fabricmc.blockfinder.movement.CardinalDirection;
 import net.fabricmc.blockfinder.movement.PlayerManipulator;
+import net.fabricmc.blockfinder.utils.ClickType;
+import net.fabricmc.blockfinder.utils.ProcessType;
 import net.fabricmc.blockfinder.utils.SearchType;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,6 +18,7 @@ import net.minecraft.server.command.CommandManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.callback.Callback;
 import java.util.HashSet;
 
 public class BlockFinder implements ModInitializer {
@@ -23,7 +26,19 @@ public class BlockFinder implements ModInitializer {
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger("modid");
-	public static final MinecraftClient client = MinecraftClient.getInstance();
+	public static Holding leftHolding;
+	public static Holding rightHolding;
+	public static Holding forwardHolding;
+
+	private static BlockFinder INSTANCE;
+
+	public BlockFinder() {
+		INSTANCE = this;
+	}
+
+	public static BlockFinder getInstance() {
+		return INSTANCE;
+	}
 
 
 	@Override
@@ -32,7 +47,12 @@ public class BlockFinder implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		//search registration
-		LOGGER.info("Hello Fabric world!");
+		LOGGER.info("BlockFinder Initalised");
+
+		ClientLifecycleEvents.CLIENT_STARTED.register(this::clientReady);
+
+		ClientTickEvents.END_CLIENT_TICK.register(this::clientTickEvent);
+
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("search")
 					.then(CommandManager.literal("chunk").executes(context -> {
@@ -40,7 +60,7 @@ public class BlockFinder implements ModInitializer {
 					})));
 			dispatcher.register(CommandManager.literal("search")
 					.then(CommandManager.literal("circle")
-							.then(CommandManager.argument("diameter",IntegerArgumentType.integer(1,51)).executes(context -> {
+							.then(CommandManager.argument("diameter",IntegerArgumentType.integer(1,101)).executes(context -> {
 								return SearchCommand.runCommand(context, SearchType.CIRCLE,IntegerArgumentType.getInteger(context,"diameter"));
 							}))));
 			});
@@ -76,6 +96,44 @@ public class BlockFinder implements ModInitializer {
 				return AbortCommand.runCommand(context);
 			}));
 		}));
+		//click command
+		CommandRegistrationCallback.EVENT.register((((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(CommandManager.literal("click")
+					.then(CommandManager.literal("left").executes(context -> {
+						return ClickCommand.runCommand(ClickType.LEFT);
+					})));
+			dispatcher.register(CommandManager.literal("click")
+					.then(CommandManager.literal("right").executes(context -> {
+						return ClickCommand.runCommand(ClickType.RIGHT);
+					})));
+			dispatcher.register(CommandManager.literal("click")
+					.then(CommandManager.literal("stop").executes(context -> {
+						return ClickCommand.runCommand(ClickType.STOP);
+					})));
+
+
+
+		})));
+	}
+
+	private void clientReady(MinecraftClient client) {
+		leftHolding = new Holding(client.options.attackKey);
+		rightHolding = new Holding(client.options.useKey);
+		forwardHolding = new Holding(client.options.forwardKey);
+	}
+
+	private void clientTickEvent(MinecraftClient mc) {
+		if (PlayerManipulator.getCurrentProcess() == ProcessType.VERTICAL_DOWN) { //assuming all downards motion requires breaking
+			leftHolding.getKey().setPressed(true);
+		}
+		if (PlayerManipulator.getCurrentProcess() == ProcessType.VERTICAL_UP) {//assuming all upwards motion requires placing
+			rightHolding.getKey().setPressed(true);
+		}
+		if (PlayerManipulator.getCurrentProcess() == ProcessType.HORIZONTAL) {
+			forwardHolding.getKey().setPressed(true);
+			PlayerManipulator.checkIfHorizontalPositionReached();
+		}
+
 
 	}
 

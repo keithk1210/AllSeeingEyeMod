@@ -2,6 +2,7 @@ package net.fabricmc.blockfinder.movement;
 
 import net.fabricmc.blockfinder.BlockFinder;
 import net.fabricmc.blockfinder.objects.PlayerHeadMovement;
+import net.fabricmc.blockfinder.utils.ProcessType;
 import net.fabricmc.blockfinder.utils.Utils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -22,6 +23,9 @@ public class PlayerManipulator {
 
     private static boolean lookDirectionInControl = false;
     private static boolean pitchInControl = false;
+    private static boolean isLeftClickDown = false;
+    private static boolean isRightClickDown = false;
+    private static ProcessType currentProcess;
 
     private static BlockPos destination;
 
@@ -104,7 +108,7 @@ public class PlayerManipulator {
     public static void setPlayer(PlayerEntity player) {PlayerManipulator.player = player; };
 
     public static void checkIfHorizontalPositionReached() {
-        if (player != null && destination != null && headMovements.size() > 0) {
+        if (currentProcess == ProcessType.HORIZONTAL && player != null && destination != null && headMovements.size() > 0) {
             if (headMovements.peek().getDestination() == CardinalDirection.EAST || headMovements.peek().getDestination() == CardinalDirection.WEST) {
 
                 if (player.getBlockX() == destination.getX()) {
@@ -113,8 +117,12 @@ public class PlayerManipulator {
                     log("Toggled was cleared");
                     printHeadMovements();
                     if (headMovements.size() > 0) {
+                        PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
                         PlayerManipulator.lookDirectionInControl = true;
                         log("lookDirectionInControl updated to: " + lookDirectionInControl);
+                    } else {
+                        PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_PITCH);
+                        BlockFinder.LOGGER.info("Horizontal position reached. Settings process to: " + currentProcess);
                     }
                 }
             } else if (headMovements.peek().getDestination() == CardinalDirection.NORTH || headMovements.peek().getDestination() == CardinalDirection.SOUTH) {
@@ -125,8 +133,12 @@ public class PlayerManipulator {
                     log("Toggled was cleared");
                     printHeadMovements();
                     if (headMovements.size() > 0) {
+                        PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
                         PlayerManipulator.lookDirectionInControl = true;
                         log("lookDirectionInControl updated to: " + lookDirectionInControl);
+                    } else {
+                        PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_PITCH);
+                        BlockFinder.LOGGER.info("Horizontal position reached. Settings process to: " + currentProcess);
                     }
                 }
             }
@@ -134,6 +146,14 @@ public class PlayerManipulator {
 
 
             }
+    }
+
+    public static void determineVerticalProcessType() {
+        if (player.getBlockY() < destination.getY()) {
+            setCurrentProcess(ProcessType.VERTICAL_DOWN);
+        } else if (player.getBlockY() > destination.getY()) {
+            setCurrentProcess(ProcessType.VERTICAL_UP);
+        }
     }
 
     public static int getYawIncrementMultiplier() {
@@ -173,6 +193,30 @@ public class PlayerManipulator {
         PlayerManipulator.lookDirectionInControl = lookDirectionInControl;
     }
 
+    public static boolean isLeftClickDown() {
+        return isLeftClickDown;
+    }
 
+    public static boolean isIsRightClickDown() {
+        return isRightClickDown;
+    }
+
+    public static void setIsRightClickDown(boolean bool) {
+        isRightClickDown = bool;
+        BlockFinder.LOGGER.info("Is right click down? " + isRightClickDown);
+    }
+
+    public static void setIsLeftClickDown(boolean bool) {
+        isLeftClickDown = bool;
+        BlockFinder.LOGGER.info("Is left click down? " + isLeftClickDown);
+    }
+
+    public static void setCurrentProcess(ProcessType currentProcess) {
+        PlayerManipulator.currentProcess = currentProcess;
+    }
+
+    public static ProcessType getCurrentProcess() {
+        return currentProcess;
+    }
 
 }

@@ -17,18 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyboardInput.class)
 public class KeyboardMixin {
 
-	@Inject(method = "tick", at = @At("HEAD"))
-	private void checkIfHorizontalPositionReached(CallbackInfo info) {
-		PlayerManipulator.checkIfHorizontalPositionReached();
-	}
-
 	@Redirect(method = "tick", at = @At(
 			value = "FIELD",
 			target = "net/minecraft/client/input/KeyboardInput.pressingForward:Z",
 			opcode = Opcodes.GETFIELD,
 			ordinal = 0))
 	private boolean onPressingForward(KeyboardInput input) {
-		input.pressingForward = input.pressingForward | PlayerManipulator.hasDirection(MovementDirection.FORWARD);
+		input.pressingForward = input.pressingForward;
 		return input.pressingForward;
 	}
 
