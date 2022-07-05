@@ -45,13 +45,13 @@ public class Utils {
     }
 
     //returns 1 | -1
-    public static int getIdealYawIncrement(double convertedYaw, double targetDiretion) {
-        double i = convertedYaw;
-        double j = convertedYaw;
+    public static int getIdealYawIncrement(double yaw, double targetDirection) {
+        double i = Utils.convertYaw(yaw);
+        double j = Utils.convertYaw(targetDirection);
         double positiveArcDegrees = 0;
         double negativeArcDegrees = 0;
-        while (Math.abs(i - targetDiretion ) > 5) {
-            //BlockFinder.LOGGER.info("i = " + i + " target direction = " + targetDiretion);
+        while (Math.abs(i - targetDirection ) > 1) {
+            //BlockFinder.LOGGER.info("i = " + i + " target direction = " + targetDirection);
             if (i > 360) {
                 i = 0;
             } else {
@@ -59,8 +59,8 @@ public class Utils {
             }
             positiveArcDegrees += 1;
         }
-        while (Math.abs(j - targetDiretion) > 5) {
-            //BlockFinder.LOGGER.info("j = " + j + " target direction = " + targetDiretion);
+        while (Math.abs(j - targetDirection) > 1) {
+            //BlockFinder.LOGGER.info("j = " + j + " target direction = " + targetDirection);
             if (j < 0) {
                 j = 360;
             } else {

@@ -1,24 +1,26 @@
 package net.fabricmc.blockfinder.movement;
 
 import net.fabricmc.blockfinder.BlockFinder;
+import net.fabricmc.blockfinder.objects.PlayerHeadMovement;
+import net.fabricmc.blockfinder.utils.Utils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.HashSet;
+import java.util.*;
 
 public class PlayerManipulator {
 
 
     private static PlayerEntity player;
     private static HashSet<MovementDirection> toggled = new HashSet();
-    private static double directionToFace = -181; //defaults to -181 which is impossible in minecraft terms
+    private static Queue<PlayerHeadMovement> headMovements = new ArrayDeque<>();
     private static int yawIncrement;
 
     private static int yawIncrementMultiplier = 10;
 
     public static int allowedYawDiscrepancy = 5;
 
-    public static boolean lookDirectionInControl = false;
+    private static boolean lookDirectionInControl = false;
     private static boolean pitchInControl = false;
 
     private static BlockPos destination;
@@ -44,14 +46,6 @@ public class PlayerManipulator {
         return PlayerManipulator.yawIncrement;
     }
 
-    public static void setDirectionToFace(double directionToFace) {
-        PlayerManipulator.directionToFace = directionToFace;
-    }
-
-    public static double getDirectionToFace() {
-        return PlayerManipulator.directionToFace;
-    }
-
     public static void addDirection(MovementDirection direction) {
         PlayerManipulator.toggled.add(direction);
     }
@@ -63,6 +57,28 @@ public class PlayerManipulator {
     public static void setDestination(BlockPos pos) {
         log("Setting destination to: " + pos.getX() + ", " + + pos.getY() + ", " + pos.getZ());
         PlayerManipulator.destination = pos;
+        if (player.getBlockPos().getX() > pos.getX()) {
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.WEST, 1);
+            headMovements.add(headMovement);
+        } else {
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.EAST, 1);
+            headMovements.add(headMovement);
+        }
+
+        int lastAngle = headMovements.peek().getDestination().getDegrees();
+
+        if (player.getBlockPos().getZ() > pos.getZ()) {
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.NORTH, 1);
+            headMovements.add(headMovement);
+        } else {
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.SOUTH, 1);
+            headMovements.add(headMovement);
+        }
+
+        BlockFinder.LOGGER.info("Current head movements:");
+        for (PlayerHeadMovement direction : headMovements) {
+            BlockFinder.LOGGER.info(direction.toString());
+        }
     }
 
     public static BlockPos getDestination() {
@@ -74,7 +90,6 @@ public class PlayerManipulator {
         PlayerManipulator.toggled.clear();
         PlayerManipulator.destination = null;
         PlayerManipulator.lookDirectionInControl = false;
-        PlayerManipulator.directionToFace = -181;
         PlayerManipulator.yawIncrementMultiplier = 10;
     }
 
@@ -89,19 +104,36 @@ public class PlayerManipulator {
     public static void setPlayer(PlayerEntity player) {PlayerManipulator.player = player; };
 
     public static void checkIfHorizontalPositionReached() {
-        if (player != null && destination != null) {
-            if (player.getX() > destination.getX() && player.getZ() > destination.getZ()) {
-                double xDiff = Math.abs(player.getX() - destination.getX());
-                double zDiff = Math.abs(player.getZ() - destination.getZ());
-                if (xDiff <= .5 && zDiff <= .5) {
-                    BlockFinder.LOGGER.info("Player reached horizontal position of: " + player.getBlockPos().getX() + ", " + player.getBlockPos().getZ());
-                    PlayerManipulator.terminateHorizontalMovement();
-                    setPitchInControl(true);
-                    BlockFinder.LOGGER.info("PlayerManipulator.pitchInControl set to: " + PlayerManipulator.pitchInControl);
+        if (player != null && destination != null && headMovements.size() > 0) {
+            if (headMovements.peek().getDestination() == CardinalDirection.EAST || headMovements.peek().getDestination() == CardinalDirection.WEST) {
+
+                if (player.getBlockX() == destination.getX()) {
+                    toggled.clear();
+                    PlayerManipulator.getHeadMovements().remove();
+                    log("Toggled was cleared");
+                    printHeadMovements();
+                    if (headMovements.size() > 0) {
+                        PlayerManipulator.lookDirectionInControl = true;
+                        log("lookDirectionInControl updated to: " + lookDirectionInControl);
+                    }
+                }
+            } else if (headMovements.peek().getDestination() == CardinalDirection.NORTH || headMovements.peek().getDestination() == CardinalDirection.SOUTH) {
+                double zDiff = Math.abs(player.getZ() - (destination.getZ() + .5));
+                if (player.getBlockZ() == destination.getZ()) {
+                    toggled.clear();
+                    PlayerManipulator.getHeadMovements().remove();
+                    log("Toggled was cleared");
+                    printHeadMovements();
+                    if (headMovements.size() > 0) {
+                        PlayerManipulator.lookDirectionInControl = true;
+                        log("lookDirectionInControl updated to: " + lookDirectionInControl);
+                    }
                 }
             }
 
-        }
+
+
+            }
     }
 
     public static int getYawIncrementMultiplier() {
@@ -110,6 +142,7 @@ public class PlayerManipulator {
 
     public static void setYawIncrementMultiplier(int yawIncrementMultiplier) {
         PlayerManipulator.yawIncrementMultiplier = yawIncrementMultiplier;
+        //log("Yaw increment multiplier set to: " + PlayerManipulator.getYawIncrementMultiplier());
     }
 
     public static void setPitchInControl(boolean pitchInControl) {
@@ -119,6 +152,25 @@ public class PlayerManipulator {
 
     public static boolean getPitchInControl() {
         return pitchInControl;
+    }
+
+    public static Queue<PlayerHeadMovement> getHeadMovements() {
+        return headMovements;
+    }
+
+    public static void printHeadMovements() {
+        BlockFinder.LOGGER.info("Current head movements");
+        for (PlayerHeadMovement hm: headMovements) {
+            BlockFinder.LOGGER.info(hm.toString());
+        }
+    }
+
+    public static boolean getLookDirectionInControl() {
+        return lookDirectionInControl;
+    }
+
+    public static void setLookDirectionInControl(boolean lookDirectionInControl) {
+        PlayerManipulator.lookDirectionInControl = lookDirectionInControl;
     }
 
 

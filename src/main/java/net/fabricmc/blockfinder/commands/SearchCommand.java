@@ -27,33 +27,14 @@ public class SearchCommand {
             foundBlock = ChunkScanner.circleScan(context.getSource(),diameter);
         }
         if (foundBlock != null) {
-            double centerX = foundBlock.getX() + .5;
-            double centerZ =  foundBlock.getZ() + .5;
-
-            BlockFinder.LOGGER.info("Block found at " + foundBlock.getX() + ", " + foundBlock.getZ() + "! Center coords are: " + centerX + ", " + centerZ + " (inside SearchCommand.runCommand()");
-            BlockFinder.LOGGER.info("Player was at: " + player.getBlockX() + ", " + player.getBlockZ());
-
-            double angle = Utils.getAngle(player.getYaw(),centerX - player.getX(), centerZ - player.getZ());
-
-            BlockFinder.LOGGER.info("At line 27 of SearchCommand.java");
-            player.sendMessage(Text.literal("Block found at " + foundBlock.getX() + ", " + foundBlock.getZ() + "!"));
-            player.sendMessage(Text.literal("Look at this angle: " + angle));
-
-            double convertedYaw = Utils.convertYaw(player.getYaw());
-            double convertedAngle = Utils.convertYaw(angle);
-
-            BlockFinder.LOGGER.info("Look at this angle: " + angle + " Converted: " + convertedAngle + " Current player yaw: " + player.getYaw() + " converted: " + convertedYaw);
-
-            int idealIncrement = Utils.getIdealYawIncrement(convertedYaw,convertedAngle);
-
-            BlockFinder.LOGGER.info("Setting ideal yaw increment: " + idealIncrement);
-
             PlayerManipulator.setPlayer(player);
-
-            PlayerManipulator.setYawIncrement(idealIncrement);
-            PlayerManipulator.setDirectionToFace(angle);
-            PlayerManipulator.lookDirectionInControl = true;
+            PlayerManipulator.setLookDirectionInControl(true);
             PlayerManipulator.setDestination(new BlockPos(foundBlock.getX(), foundBlock.getY() + 1, foundBlock.getZ())); //add one to 1 because the player will end up on top of the block
+
+
+
+
+
         }
         return 1;
     }

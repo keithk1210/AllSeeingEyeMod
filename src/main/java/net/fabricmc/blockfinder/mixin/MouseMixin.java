@@ -35,21 +35,27 @@ public abstract class MouseMixin {
                 BlockFinder.LOGGER.info("player yaw reset to: " + client.player.getYaw());
             }
 
-            if (PlayerManipulator.lookDirectionInControl == true && PlayerManipulator.getDirectionToFace() > -181) {
+            if (PlayerManipulator.getLookDirectionInControl() && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
                 //BlockFinder.LOGGER.info("Mod is in control of mouse. Increment: " + PlayerManipulator.getYawIncrement());
-                double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getDirectionToFace());
+                double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees());
+                BlockFinder.LOGGER.info("yaw " + client.player.getYaw() + " PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() " + PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() + " difference " + difference);
                 if (difference <= 15) {
                     PlayerManipulator.setYawIncrementMultiplier(1);
-                    BlockFinder.LOGGER.info("Yaw increment multiplier set to: " + PlayerManipulator.getYawIncrementMultiplier());
                 }
 
-                client.player.changeLookDirection(PlayerManipulator.getYawIncrement() * PlayerManipulator.getYawIncrementMultiplier(),0);
+                client.player.changeLookDirection(PlayerManipulator.getHeadMovements().peek().getDirection() * PlayerManipulator.getYawIncrementMultiplier(),0);
 
                 //BlockFinder.LOGGER.info("PlayerManipulator.mouseInControl: " + PlayerManipulator.lookDirectionInControl + " Player yaw: " + client.player.getYaw() + " Direction to face: " + PlayerManipulator.getDirectionToFace() + " Difference: " + difference);
                 if (difference <= 1) {
-                    BlockFinder.LOGGER.info("Process finished. Player angle reached: " + client.player.getYaw());
-                    PlayerManipulator.lookDirectionInControl = false;
+                    PlayerManipulator.setLookDirectionInControl(false);
                     PlayerManipulator.addDirection(MovementDirection.FORWARD);
+                    BlockFinder.LOGGER.info("PlayerManipulator.getDirections: " + PlayerManipulator.getHeadMovements());
+                    if (PlayerManipulator.getHeadMovements().size() == 0) {
+                        BlockFinder.LOGGER.info("Process finished. Player angle reached: " + client.player.getYaw());
+
+                    } else {
+                        PlayerManipulator.setYawIncrementMultiplier(10);
+                    }
                 }
                 return;
             } else {
@@ -60,7 +66,7 @@ public abstract class MouseMixin {
 
     @Inject(method = "updateMouse", at = @At("HEAD"))
     private void updatePlayerPitch(CallbackInfo info) {
-        if (client.player != null && PlayerManipulator.getPitchInControl() == true) {
+        if (client.player != null && PlayerManipulator.getPitchInControl()) {
             if (client.player.getPitch() < 90) {
                 client.player.setPitch(client.player.getPitch() + 1);
             } else {
