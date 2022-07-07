@@ -11,6 +11,7 @@ import net.fabricmc.blockfinder.movement.CardinalDirection;
 import net.fabricmc.blockfinder.movement.PlayerManipulator;
 import net.fabricmc.blockfinder.utils.ClickType;
 import net.fabricmc.blockfinder.utils.ProcessType;
+import net.fabricmc.blockfinder.utils.ScanType;
 import net.fabricmc.blockfinder.utils.SearchType;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -76,12 +77,12 @@ public class BlockFinder implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("search")
 					.then(CommandManager.literal("chunk").executes(context -> {
-						return SearchCommand.runCommand(context, SearchType.CHUNK,0);
+						return SearchCommand.runCommand(context, ScanType.CHUNK,0);
 					})));
 			dispatcher.register(CommandManager.literal("search")
 					.then(CommandManager.literal("circle")
 							.then(CommandManager.argument("diameter",IntegerArgumentType.integer(1,101)).executes(context -> {
-								return SearchCommand.runCommand(context, SearchType.CIRCLE,IntegerArgumentType.getInteger(context,"diameter"));
+								return SearchCommand.runCommand(context, ScanType.CIRCLE,IntegerArgumentType.getInteger(context,"diameter"));
 							}))));
 			});
 		//lookindirection registration

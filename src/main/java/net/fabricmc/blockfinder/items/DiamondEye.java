@@ -18,9 +18,4 @@ public class DiamondEye extends BaseBlockEye{
         super(settings, new HashSet<Block>(Arrays.asList(Blocks.DIAMOND_ORE,Blocks.DEEPSLATE_DIAMOND_ORE)));
     }
 
-    @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
-        BlockFinder.LOGGER.info("Player used Diamond eye");
-        return super.use(world, playerEntity, hand);
-    }
 }

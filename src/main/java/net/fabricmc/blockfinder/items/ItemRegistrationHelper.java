@@ -20,6 +20,7 @@ public class ItemRegistrationHelper {
     public static final Item DIAMOND_EYE = new DiamondEye(new FabricItemSettings().group(EYE_GROUP));
     //Structure Eyes
     public static final Item VILLAGE_EYE = new VillageEye(new FabricItemSettings().group(EYE_GROUP));
+    public static final Item MINESHAFT_EYE = new MineshaftEye(new FabricItemSettings().group(EYE_GROUP));
 
     public ItemRegistrationHelper() {}
 
@@ -28,5 +29,6 @@ public class ItemRegistrationHelper {
         Registry.register(Registry.ITEM,new Identifier("blockfinder","diamond_eye"), DIAMOND_EYE);
         //Structure eyes
         Registry.register(Registry.ITEM,new Identifier("blockfinder","village_eye"),VILLAGE_EYE);
+        Registry.register(Registry.ITEM,new Identifier("blockfinder","mineshaft_eye"),MINESHAFT_EYE);
     }
 }

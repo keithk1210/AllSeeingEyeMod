@@ -15,7 +15,6 @@ public class LookCommand{
         BlockFinder.LOGGER.info("Forcing player to look " + direction.toString());
         //PlayerManipulator.setDirectionToFace(direction);
         //PlayerManipulator.mouseInControl = !PlayerManipulator.mouseInControl;
-        BlockFinder.LOGGER.info("PlayerManipulator.lookDirectionInControl updated to: " + PlayerManipulator.getLookDirectionInControl());
         ServerCommandSource serverCommandSource = (ServerCommandSource) context.getSource();
         PlayerEntity player = serverCommandSource.getEntity().getCommandSource().getPlayer();
         return 1;

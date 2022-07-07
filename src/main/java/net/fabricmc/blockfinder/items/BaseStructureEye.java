@@ -3,6 +3,9 @@ package net.fabricmc.blockfinder.items;
 import net.fabricmc.blockfinder.movement.PlayerManipulator;
 import net.fabricmc.blockfinder.scanning.ChunkScanner;
 import net.fabricmc.blockfinder.utils.ProcessType;
+import net.fabricmc.blockfinder.utils.SearchType;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,7 +22,7 @@ import net.minecraft.world.gen.structure.Structure;
 
 import java.util.HashSet;
 
-public class BaseStructureEye extends Item {
+public class BaseStructureEye extends BaseEye {
 
     TagKey<Structure> target;
 
@@ -30,13 +33,13 @@ public class BaseStructureEye extends Item {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
-        playerEntity.playSound(SoundEvents.BLOCK_END_PORTAL_SPAWN, 1.0F, 1.0F);
-        playerEntity.clearActiveItem();
+        super.onUse(playerEntity,hand);
+        playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED,Integer.MAX_VALUE,5,false,false,false));
+        playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST,Integer.MAX_VALUE,5,false,false,false));
         if (world instanceof ServerWorld) {
             ServerWorld serverWorld = (ServerWorld) world;
             BlockPos blockPos = serverWorld.locateStructure(target,playerEntity.getBlockPos(),100,false);
-            PlayerManipulator.beginProcess(playerEntity,blockPos);
-
+            PlayerManipulator.beginProcess(playerEntity,blockPos, SearchType.STRUCTURE);
         }
         return TypedActionResult.success(playerEntity.getStackInHand(hand));
     }

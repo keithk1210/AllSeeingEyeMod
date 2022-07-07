@@ -36,10 +36,10 @@ public abstract class MouseMixin {
                 BlockFinder.LOGGER.info("player yaw reset to: " + client.player.getYaw());
             }
 
-            if (PlayerManipulator.getLookDirectionInControl() && PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_YAW && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
+            if (PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_YAW && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
                 //BlockFinder.LOGGER.info("Mod is in control of mouse. Increment: " + PlayerManipulator.getYawIncrement());
 
-                double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees());
+                double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getHeadMovements().peek().getDestinationAngle());
                // BlockFinder.LOGGER.info("yaw " + client.player.getYaw() + " PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() " + PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() + " difference " + difference);
 
                 if (difference <= 15) {
@@ -49,8 +49,7 @@ public abstract class MouseMixin {
                 client.player.changeLookDirection(PlayerManipulator.getHeadMovements().peek().getDirection() * PlayerManipulator.getYawIncrementMultiplier(),0);
 
                 //BlockFinder.LOGGER.info("PlayerManipulator.mouseInControl: " + PlayerManipulator.lookDirectionInControl + " Player yaw: " + client.player.getYaw() + " Direction to face: " + PlayerManipulator.getDirectionToFace() + " Difference: " + difference);
-                if (difference <= 1) {
-                    PlayerManipulator.setLookDirectionInControl(false);
+                if (difference <= PlayerManipulator.getAllowedYawDiscrepancy()) {
                     PlayerManipulator.setCurrentProcess(ProcessType.HORIZONTAL);
                     PlayerManipulator.addDirection(MovementDirection.FORWARD);
                     BlockFinder.LOGGER.info("PlayerManipulator.getDirections: " + PlayerManipulator.getHeadMovements());
