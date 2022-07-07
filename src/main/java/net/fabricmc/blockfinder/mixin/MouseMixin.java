@@ -40,7 +40,7 @@ public abstract class MouseMixin {
                 //BlockFinder.LOGGER.info("Mod is in control of mouse. Increment: " + PlayerManipulator.getYawIncrement());
 
                 double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees());
-                BlockFinder.LOGGER.info("yaw " + client.player.getYaw() + " PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() " + PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() + " difference " + difference);
+               // BlockFinder.LOGGER.info("yaw " + client.player.getYaw() + " PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() " + PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() + " difference " + difference);
 
                 if (difference <= 15) {
                     PlayerManipulator.setYawIncrementMultiplier(1);

@@ -1,0 +1,28 @@
+{
+  "mappings": {
+    "net/fabricmc/blockfinder/mixin/KeyboardMixin": {
+      "net/minecraft/client/input/KeyboardInput.pressingLeft:Z": "Lnet/minecraft/class_743;field_3908:Z",
+      "tick": "Lnet/minecraft/class_743;method_3129(ZF)V",
+      "net/minecraft/client/input/KeyboardInput.pressingBack:Z": "Lnet/minecraft/class_743;field_3909:Z",
+      "net/minecraft/client/input/KeyboardInput.pressingForward:Z": "Lnet/minecraft/class_743;field_3910:Z",
+      "net/minecraft/client/input/KeyboardInput.pressingRight:Z": "Lnet/minecraft/class_743;field_3906:Z"
+    },
+    "net/fabricmc/blockfinder/mixin/MouseMixin": {
+      "updateMouse": "Lnet/minecraft/class_312;method_1606()V"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "net/fabricmc/blockfinder/mixin/KeyboardMixin": {
+        "net/minecraft/client/input/KeyboardInput.pressingLeft:Z": "Lnet/minecraft/class_743;field_3908:Z",
+        "tick": "Lnet/minecraft/class_743;method_3129(ZF)V",
+        "net/minecraft/client/input/KeyboardInput.pressingBack:Z": "Lnet/minecraft/class_743;field_3909:Z",
+        "net/minecraft/client/input/KeyboardInput.pressingForward:Z": "Lnet/minecraft/class_743;field_3910:Z",
+        "net/minecraft/client/input/KeyboardInput.pressingRight:Z": "Lnet/minecraft/class_743;field_3906:Z"
+      },
+      "net/fabricmc/blockfinder/mixin/MouseMixin": {
+        "updateMouse": "Lnet/minecraft/class_312;method_1606()V"
+      }
+    }
+  }
+}

@@ -23,7 +23,7 @@ public class KeyboardMixin {
 			opcode = Opcodes.GETFIELD,
 			ordinal = 0))
 	private boolean onPressingForward(KeyboardInput input) {
-		input.pressingForward = input.pressingForward;
+		input.pressingForward = input.pressingForward || PlayerManipulator.hasDirection(MovementDirection.FORWARD);
 		return input.pressingForward;
 	}
 

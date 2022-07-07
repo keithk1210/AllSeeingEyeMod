@@ -4,7 +4,9 @@ import net.fabricmc.blockfinder.BlockFinder;
 import net.fabricmc.blockfinder.objects.PlayerHeadMovement;
 import net.fabricmc.blockfinder.utils.ProcessType;
 import net.fabricmc.blockfinder.utils.Utils;
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
@@ -58,24 +60,31 @@ public class PlayerManipulator {
         return PlayerManipulator.toggled.contains(direction);
     }
 
+    public static void beginProcess(PlayerEntity playerEntity, BlockPos foundBlock) {
+        PlayerManipulator.setPlayer(playerEntity);
+        PlayerManipulator.setLookDirectionInControl(true);
+        PlayerManipulator.setDestination(foundBlock); //add one to 1 because the player will end up on top of the block
+        PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
+    }
+
     public static void setDestination(BlockPos pos) {
         log("Setting destination to: " + pos.getX() + ", " + + pos.getY() + ", " + pos.getZ());
         PlayerManipulator.destination = pos;
         if (player.getBlockPos().getX() > pos.getX()) {
-            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.WEST, 1);
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.WEST, Utils.getIdealYawIncrement(player.getYaw(),CardinalDirection.WEST.getDegrees()));
             headMovements.add(headMovement);
         } else {
-            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.EAST, 1);
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.EAST, Utils.getIdealYawIncrement(player.getYaw(),CardinalDirection.EAST.getDegrees()));
             headMovements.add(headMovement);
         }
 
         int lastAngle = headMovements.peek().getDestination().getDegrees();
 
         if (player.getBlockPos().getZ() > pos.getZ()) {
-            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.NORTH, 1);
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.NORTH, Utils.getIdealYawIncrement(lastAngle,CardinalDirection.NORTH.getDegrees()));
             headMovements.add(headMovement);
         } else {
-            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.SOUTH, 1);
+            PlayerHeadMovement headMovement = new PlayerHeadMovement(CardinalDirection.SOUTH, Utils.getIdealYawIncrement(lastAngle,CardinalDirection.SOUTH.getDegrees()));
             headMovements.add(headMovement);
         }
 
@@ -148,10 +157,24 @@ public class PlayerManipulator {
             }
     }
 
+    public static void checkIfVerticalPositionReached() {
+        if (currentProcess == ProcessType.VERTICAL_DOWN) {
+            if (player.getBlockY() == destination.getY() + 1) { //arrives at the block above the destination
+                player.sendMessage(Text.literal("Arrived at: " + player.getBlockX() + ", " + player.getBlockY() + ", " + player.getBlockZ()));
+                endAllProcesses();
+            }
+        } else if (currentProcess == ProcessType.VERTICAL_UP) {
+            if (player.getBlockY() == destination.getY() - 2) { //arrives at the block two below the destination so that the destination block is above the players head
+                player.sendMessage(Text.literal("Arrived at: " + player.getBlockX() + ", " + player.getBlockY() + ", " + player.getBlockZ()));
+                endAllProcesses();
+            }
+        }
+    }
+
     public static void determineVerticalProcessType() {
-        if (player.getBlockY() < destination.getY()) {
+        if (player.getBlockY() > destination.getY()) {
             setCurrentProcess(ProcessType.VERTICAL_DOWN);
-        } else if (player.getBlockY() > destination.getY()) {
+        } else if (player.getBlockY() < destination.getY()) {
             setCurrentProcess(ProcessType.VERTICAL_UP);
         }
     }
@@ -213,10 +236,17 @@ public class PlayerManipulator {
 
     public static void setCurrentProcess(ProcessType currentProcess) {
         PlayerManipulator.currentProcess = currentProcess;
+        BlockFinder.LOGGER.info("Current process set to: " + PlayerManipulator.currentProcess);
     }
 
     public static ProcessType getCurrentProcess() {
         return currentProcess;
+    }
+
+    public static void endAllProcesses() {
+        setCurrentProcess(null);
+        BlockFinder.inventoryHolding.getKey().setPressed(true);
+        BlockFinder.clearHoldings();
     }
 
 }

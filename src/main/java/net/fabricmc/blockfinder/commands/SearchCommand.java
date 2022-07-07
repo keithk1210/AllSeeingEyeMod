@@ -30,7 +30,7 @@ public class SearchCommand {
         if (foundBlock != null) {
             PlayerManipulator.setPlayer(player);
             PlayerManipulator.setLookDirectionInControl(true);
-            PlayerManipulator.setDestination(new BlockPos(foundBlock.getX(), foundBlock.getY() + 1, foundBlock.getZ())); //add one to 1 because the player will end up on top of the block
+            PlayerManipulator.setDestination(foundBlock); //add one to 1 because the player will end up on top of the block
             PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
 
 

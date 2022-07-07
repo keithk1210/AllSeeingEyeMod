@@ -1,0 +1,2 @@
+v1	named	intermediary
+FIELD	net/fabricmc/blockfinder/mixin/MouseMixin	Lnet/minecraft/client/MinecraftClient;	client	field_1779

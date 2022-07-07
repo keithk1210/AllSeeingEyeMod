@@ -14,7 +14,7 @@ public class AbortCommand {
         ServerCommandSource serverCommandSource = (ServerCommandSource) context.getSource();
         PlayerEntity player = serverCommandSource.getPlayer();
         player.sendMessage(Text.literal("Current process aborted"));
-        PlayerManipulator.terminateHorizontalMovement();
+        PlayerManipulator.setCurrentProcess(null);
         return 1;
     }
 }
