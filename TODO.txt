@@ -18,3 +18,10 @@ debug:
 
 -frost walker being added to the player when they use an eye
 -diamond eye has a preference for deepslate diamond?
+
+every item needs:
+
+lang entry
+json file 
+and texture
+and registration
