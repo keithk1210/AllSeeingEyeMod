@@ -1,0 +1,17 @@
+TODO:
+
+check if loot tables work
+
+
+add eyes for:
+
+-underwater temple
+
+
+remove:
+
+-mineshaft eye
+
+debug:
+
+-frost walker being added to the player when they use an eye
