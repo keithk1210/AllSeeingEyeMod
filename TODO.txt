@@ -7,6 +7,7 @@ add eyes for:
 
 -underwater temple
 -ancient debris
+-ancient city
 
 
 remove:
