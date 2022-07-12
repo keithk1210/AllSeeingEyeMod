@@ -6,6 +6,7 @@ check if loot tables work
 add eyes for:
 
 -underwater temple
+-ancient debris
 
 
 remove:
@@ -15,3 +16,4 @@ remove:
 debug:
 
 -frost walker being added to the player when they use an eye
+-diamond eye has a preference for deepslate diamond?
