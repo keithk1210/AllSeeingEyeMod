@@ -10,6 +10,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.enchantment.FrostWalkerEnchantment;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -71,8 +73,12 @@ public class PlayerManipulator {
         PlayerManipulator.setPlayer(playerEntity);
         setCurrentSearchType(searchType);
         PlayerManipulator.setDestination(foundBlock); //add one to 1 because the player will end up on top of the block
-
-        PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
+        if (searchType == SearchType.BLOCK) {
+            PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
+        } else if (searchType == SearchType.STRUCTURE) {
+            PlayerManipulator.setCurrentProcess(ProcessType.VERTICAL_FLOAT);
+            playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION,Integer.MAX_VALUE,10,false,false,false));
+        }
     }
 
     public static void clearToggled() {
@@ -143,6 +149,7 @@ public class PlayerManipulator {
         if (currentProcess == ProcessType.HORIZONTAL && player != null && destination != null && headMovements.size() > 0) {
             double angle = headMovements.peek().getDestinationAngle();
             if (getCurrentSearchType() == SearchType.BLOCK) {
+                checkIfBlocksInTheWay();
                 if (Double.compare(angle, CardinalDirection.EAST.getDegrees()) == 0 || Double.compare(angle, CardinalDirection.WEST.getDegrees()) == 0) {
                     //for block search
                     if (player.getBlockX() == destination.getX()) {
@@ -175,6 +182,7 @@ public class PlayerManipulator {
             } else if (getCurrentSearchType() == SearchType.STRUCTURE) {
                 double xDiff = Math.abs(player.getBlockX() - destination.getX());
                 double zDiff = Math.abs(player.getBlockZ() - destination.getZ());
+
                 if (xDiff <= 16 && zDiff <= 16) {
                     toggled.clear();
 
@@ -184,7 +192,7 @@ public class PlayerManipulator {
                     while (iterator.hasNext()) {
                         ItemStack itemStack = iterator.next();
                         if (itemStack.getItem().toString().equals(ItemRegistrationHelper.ALL_SEEING_BOOTS.toString())) {
-                            itemStack.addEnchantment(Enchantments.FROST_WALKER,0);
+                            itemStack.getEnchantments().clear();
                             AllSeeingEye.LOGGER.info("frost walker cleared on player");
                         }
                     }
@@ -192,6 +200,35 @@ public class PlayerManipulator {
                 }
 
             }
+        }
+    }
+
+    public static void checkIfBlocksInTheWay() {
+        int direction = (int) getHeadMovements().peek().getDestinationAngle();
+        boolean blocksInTheWay = false;
+        if (direction == CardinalDirection.NORTH.getDegrees()) {
+            if (!player.getWorld().getBlockState(player.getBlockPos().north()).equals(Blocks.AIR.getDefaultState()) && !player.getWorld().getBlockState(player.getBlockPos().north().up()).equals(Blocks.AIR.getDefaultState())) {
+                blocksInTheWay = true;
+            }
+        } else if (direction == CardinalDirection.EAST.getDegrees()) {
+            if (!player.getWorld().getBlockState(player.getBlockPos().east()).equals(Blocks.AIR.getDefaultState()) && !player.getWorld().getBlockState(player.getBlockPos().east().up()).equals(Blocks.AIR.getDefaultState())) {
+                blocksInTheWay = true;
+            }
+        } else if (direction == CardinalDirection.SOUTH.getDegrees()) {
+            if (!player.getWorld().getBlockState(player.getBlockPos().south()).equals(Blocks.AIR.getDefaultState()) && !player.getWorld().getBlockState(player.getBlockPos().south().up()).equals(Blocks.AIR.getDefaultState())) {
+                blocksInTheWay = true;
+            }
+        } else if (direction == CardinalDirection.WEST.getDegrees()) {
+            if (!player.getWorld().getBlockState(player.getBlockPos().south()).equals(Blocks.AIR.getDefaultState()) && !player.getWorld().getBlockState(player.getBlockPos().south().up()).equals(Blocks.AIR.getDefaultState())) {
+                blocksInTheWay = true;
+            }
+        }
+    }
+
+    public static void checkIfDead() {
+        if (player.isDead()) {
+            endAllProcesses();
+            AllSeeingEye.LOGGER.info("Processes ended. Reason: player death");
         }
     }
 
@@ -250,6 +287,9 @@ public class PlayerManipulator {
     }
 
     public static void setCurrentProcess(ProcessType currentProcess) {
+        if (PlayerManipulator.getCurrentProcess() == ProcessType.VERTICAL_FLOAT) {
+            getPlayer().clearStatusEffects();
+        }
         PlayerManipulator.currentProcess = currentProcess;
         AllSeeingEye.LOGGER.info("Current process set to: " + PlayerManipulator.currentProcess);
     }
@@ -262,6 +302,7 @@ public class PlayerManipulator {
         setCurrentProcess(null);
         setCurrentSearchType(null);
         AllSeeingEye.clearHoldings();
+        toggled.clear();
         getPlayer().clearStatusEffects();
         PlayerManipulator.getHeadMovements().clear();
     }
@@ -274,5 +315,7 @@ public class PlayerManipulator {
         return currentSearchType;
     }
 
-
+    public static BlockPos getDestination() {
+        return destination;
+    }
 }

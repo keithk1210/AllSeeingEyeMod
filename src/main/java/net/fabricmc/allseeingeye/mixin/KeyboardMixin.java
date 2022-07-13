@@ -34,7 +34,7 @@ public class KeyboardMixin {
 			ordinal = 0))
 	private boolean onPressingBack(KeyboardInput input) {
 		input.pressingBack = input.pressingBack;
-		return input.pressingBack;
+		return !PlayerManipulator.hasDirection(MovementDirection.FORWARD) && input.pressingBack ;
 	}
 
 	@Redirect(method = "tick", at = @At(
@@ -44,7 +44,7 @@ public class KeyboardMixin {
 			ordinal = 0))
 	private boolean onPressingLeft(KeyboardInput input) {
 		input.pressingLeft = input.pressingLeft;
-		return input.pressingLeft;
+		return !PlayerManipulator.hasDirection(MovementDirection.FORWARD) && input.pressingLeft;
 	}
 
 	@Redirect(method = "tick", at = @At(
@@ -54,7 +54,7 @@ public class KeyboardMixin {
 			ordinal = 0))
 	private boolean onPressingRight(KeyboardInput input) {
 		input.pressingRight = input.pressingRight;
-		return input.pressingRight;
+		return !PlayerManipulator.hasDirection(MovementDirection.FORWARD) && input.pressingRight;
 	}
 
 }

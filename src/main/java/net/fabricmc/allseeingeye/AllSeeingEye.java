@@ -1,6 +1,9 @@
 package net.fabricmc.allseeingeye;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import net.fabricmc.allseeingeye.blocks.BlockRegistrationHelper;
+import net.fabricmc.allseeingeye.keybindings.KeybindingRegistrationHelper;
+import net.fabricmc.allseeingeye.utils.SearchType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.allseeingeye.commands.*;
 import net.fabricmc.allseeingeye.holding.Holding;
@@ -13,12 +16,17 @@ import net.fabricmc.allseeingeye.utils.ScanType;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTables;
 import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,9 +72,10 @@ public class AllSeeingEye implements ModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(this::clientTickEvent);
 
 		ItemRegistrationHelper.register();
+		BlockRegistrationHelper.register();
+		KeybindingRegistrationHelper.register();
 
 		HashSet<Identifier> lootTables = new HashSet<> (Arrays.asList(LootTables.SIMPLE_DUNGEON_CHEST,LootTables.SHIPWRECK_MAP_CHEST,LootTables.ABANDONED_MINESHAFT_CHEST,LootTables.NETHER_BRIDGE_CHEST,LootTables.RUINED_PORTAL_CHEST,LootTables.BASTION_TREASURE_CHEST));
-
 
 		LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
 			if (source.isBuiltin() && lootTables.contains(id)) {
@@ -152,6 +161,11 @@ public class AllSeeingEye implements ModInitializer {
 
 	private void clientTickEvent(MinecraftClient mc) {
 		if (PlayerManipulator.getCurrentProcess() != null) {
+			PlayerManipulator.checkIfDead();
+			if (KeybindingRegistrationHelper.stopKey.wasPressed()) {
+				PlayerManipulator.endAllProcesses();
+				PlayerManipulator.getPlayer().sendMessage(Text.literal("You escaped the grasp of the All-Seeing eye."));
+			}
 			if (PlayerManipulator.getCurrentProcess() == ProcessType.VERTICAL_DOWN) { //assuming all downards motion requires breaking
 				PlayerManipulator.checkIfVerticalPositionReached();
 				leftHolding.getKey().setPressed(true);
@@ -165,8 +179,27 @@ public class AllSeeingEye implements ModInitializer {
 			if (PlayerManipulator.getCurrentProcess() == ProcessType.HORIZONTAL) {
 				PlayerManipulator.checkIfHorizontalPositionReached();
 			}
+			if (PlayerManipulator.getCurrentProcess() != ProcessType.VERTICAL_FLOAT && PlayerManipulator.getCurrentSearchType() == SearchType.STRUCTURE) {
+				PlayerEntity player = mc.player;
+				if (player.getWorld().getBlockState(player.getBlockPos().down()) != null && player.getWorld().getBlockState(player.getBlockPos().down()).equals(Blocks.AIR.getDefaultState())) {
+					player.getWorld().setBlockState(player.getBlockPos().down(),BlockRegistrationHelper.PURPLE_CLOUD.getDefaultState());
+					player.getWorld().setBlockState(player.getBlockPos().down().north(),BlockRegistrationHelper.PURPLE_CLOUD.getDefaultState());
+					player.getWorld().setBlockState(player.getBlockPos().down().east(),BlockRegistrationHelper.PURPLE_CLOUD.getDefaultState());
+					player.getWorld().setBlockState(player.getBlockPos().down().south(),BlockRegistrationHelper.PURPLE_CLOUD.getDefaultState());
+					player.getWorld().setBlockState(player.getBlockPos().down().west(),BlockRegistrationHelper.PURPLE_CLOUD.getDefaultState());
+				}
+			}
+			if (PlayerManipulator.getCurrentProcess() == ProcessType.VERTICAL_FLOAT) {
+				if (mc.player.getBlockY() >= 257) {
+					mc.player.clearStatusEffects();
+					PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
+				}
+			}
 		}
 		}
+
+
+
 
 		public static void clearHoldings() {
 		for (Holding holding: holdings) {

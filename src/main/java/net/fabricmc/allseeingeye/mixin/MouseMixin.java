@@ -12,6 +12,8 @@ import net.fabricmc.allseeingeye.utils.SearchType;
 import net.fabricmc.allseeingeye.utils.Utils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -62,16 +64,12 @@ public abstract class MouseMixin {
                     }
                 }
                 return;
-            } else if (PlayerManipulator.getCurrentSearchType() == SearchType.STRUCTURE && PlayerManipulator.getCurrentProcess() == ProcessType.HORIZONTAL && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
+            } else if (PlayerManipulator.getCurrentProcess() == ProcessType.HORIZONTAL && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
 
                 double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getHeadMovements().peek().getDestinationAngle());
 
-                if (difference >= 15) {
-                    double lastAngle = PlayerManipulator.getHeadMovements().peek().getDestinationAngle();
-                    PlayerManipulator.setYawIncrementMultiplier(10);
-                    PlayerManipulator.getHeadMovements().remove();
-                    PlayerManipulator.getHeadMovements().add(new PlayerHeadMovement(lastAngle,Utils.getIdealYawIncrement(client.player.getYaw(),lastAngle)));
-                    PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
+                if (difference >= 1) {
+                    client.player.setYaw((float)PlayerManipulator.getHeadMovements().peek().getDestinationAngle());
                 }
             }
         }

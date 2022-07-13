@@ -1,7 +1,12 @@
 {
   "item.allseeingeye.diamond_eye": "Diamond Eye",
+  "item.allseeingeye.ancient_debris_eye": "Ancient Debris Eye",
   "item.allseeingeye.village_eye": "Village Eye",
-  "item.allseeingeye.mineshaft_eye": "Mineshaft Eye",
-  "item.allseeingeye.allseeing_boots": "All-Seeing Boots",
-  "item.allseeingeye.woodland_mansion_eye": "Woodland Mansion Eye"
+  "item.allseeingeye.ocean_monument_eye": "Ocean Monument Eye",
+  "item.allseeingeye.all_seeing_boots": "All-Seeing Boots",
+  "item.allseeingeye.woodland_mansion_eye": "Woodland Mansion Eye",
+  "block.allseeingeye.purple_cloud": "Purple Cloud",
+  "category.allseingeye.stop": "Stop Key",
+  "itemGroup.allseeingeye.other": "All-Seeing Eye Mod",
+  "item.allseeingeye.base_eye.tooltip" : "Requires XP"
 }

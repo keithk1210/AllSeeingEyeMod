@@ -5,5 +5,6 @@ public enum ProcessType {
     VERTICAL_UP,
     VERTICAL_DOWN,
     ANGULAR_YAW,
-    ANGULAR_PITCH
+    ANGULAR_PITCH,
+    VERTICAL_FLOAT
 }

@@ -6,6 +6,6 @@ import net.minecraft.tag.StructureTags;
 public class WoodlandMansionEye extends BaseStructureEye {
 
     public WoodlandMansionEye(Item.Settings settings) {
-        super(settings, StructureTags.ON_WOODLAND_EXPLORER_MAPS);
+        super(settings, StructureTags.ON_WOODLAND_EXPLORER_MAPS,30);
     }
 }

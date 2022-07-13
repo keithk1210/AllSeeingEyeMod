@@ -30,8 +30,8 @@ public class BaseStructureEye extends BaseEye {
 
     TagKey<Structure> target;
 
-    public BaseStructureEye(Item.Settings settings, TagKey<Structure> target) {
-        super(settings);
+    public BaseStructureEye(Item.Settings settings, TagKey<Structure> target,int levelsRequired) {
+        super(settings,levelsRequired);
         this.target = target;
     }
 
@@ -39,8 +39,7 @@ public class BaseStructureEye extends BaseEye {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
         AllSeeingEye.LOGGER.info("[structure]: world.isClient: " + world.isClient);
         if (!world.isClient && super.onUse(playerEntity,hand)) {
-            playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED,Integer.MAX_VALUE,5,false,false,false));
-            playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST,Integer.MAX_VALUE,5,false,false,false));
+
             if (world instanceof ServerWorld) {
                 ServerWorld serverWorld = (ServerWorld) world;
                 BlockPos blockPos = null;
@@ -55,6 +54,8 @@ public class BaseStructureEye extends BaseEye {
                 }
 
                 AllSeeingEye.LOGGER.info("[structure]: blockPos != null: " +(blockPos != null));
+                playerEntity.sendMessage(Text.literal("Destination: " + blockPos.getX() + ", " + blockPos.getZ()));
+
                 PlayerManipulator.beginProcess(playerEntity,blockPos, SearchType.STRUCTURE);
             }
             return TypedActionResult.success(playerEntity.getStackInHand(hand));

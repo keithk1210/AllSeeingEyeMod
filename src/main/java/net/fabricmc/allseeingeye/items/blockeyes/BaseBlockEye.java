@@ -22,8 +22,8 @@ import java.util.HashSet;
 public class BaseBlockEye extends BaseEye {
     HashSet<Block> targets;
 
-    public BaseBlockEye(Settings settings,HashSet<Block> targets) {
-        super(settings);
+    public BaseBlockEye(Settings settings,HashSet<Block> targets, int levelsRequired) {
+        super(settings,levelsRequired);
         this.targets = targets;
     }
 
