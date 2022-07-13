@@ -3,6 +3,7 @@ TODO:
 also restrict user input (player can still move during angular yaw)
 the Eye should suggest a shovel and a pick for the block eyes
 the eye tells you destination. it shouldnt do this lol
+add "isActive()" field to PM would be pretty useful probs
 
 
 
