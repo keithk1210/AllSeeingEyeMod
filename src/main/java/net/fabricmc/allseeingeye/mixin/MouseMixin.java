@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Environment(EnvType.CLIENT)
@@ -28,20 +29,42 @@ public abstract class MouseMixin {
 
     @Shadow @Final private MinecraftClient client;
 
+    @ModifyArg(method = "updateMouse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;changeLookDirection(DD)V"),index = 0)
+    private double stopYaw(double d) {
+        if (PlayerManipulator.getCurrentProcess() != null && ((PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_YAW) || (PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_PITCH))) {
+            return 0.0;
+        } else if (PlayerManipulator.getCurrentProcess() != null && PlayerManipulator.getCurrentProcess() == ProcessType.HORIZONTAL){
+            return 0.0;
+        } else {
+            return d;
+        }
+    }
+
+    @ModifyArg(method = "updateMouse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;changeLookDirection(DD)V"),index = 1)
+    private double stopPitch(double d) {
+        if (PlayerManipulator.getCurrentProcess() != null && ((PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_YAW) || PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_PITCH)) {
+            return 0.0;
+        } else {
+            return d;
+        }
+    }
+
+
     @Inject(method = "updateMouse", at = @At("HEAD"))
     private void updatePlayerLookDirection(CallbackInfo info) {
         if (client.player != null) {
             //AllSeeingEye.LOGGER.info("Player is not null");
             //AllSeeingEye.LOGGER.info("Player pitch: " + client.player.getPitch());
-            if (client.player.getYaw() > 180) { //TODO this is not the best way to do this
-                client.player.setYaw(-180);
-                AllSeeingEye.LOGGER.info("player yaw reset to: " + client.player.getYaw());
-            } else if (client.player.getYaw() < -180) {
-                client.player.setYaw(180);
-                AllSeeingEye.LOGGER.info("player yaw reset to: " + client.player.getYaw());
-            }
             //when searching for a block, yaw is not changed continuously
             if (PlayerManipulator.getCurrentProcess() == ProcessType.ANGULAR_YAW && PlayerManipulator.getHeadMovements() != null && PlayerManipulator.getHeadMovements().size() > 0) {
+
+                if (client.player.getYaw() > 180) {
+                    client.player.setYaw(-180);
+                    AllSeeingEye.LOGGER.info("player yaw reset to: " + client.player.getYaw());
+                } else if (client.player.getYaw() < -180) {
+                    client.player.setYaw(180);
+                    AllSeeingEye.LOGGER.info("player yaw reset to: " + client.player.getYaw());
+                }
 
                 double difference = Math.abs(client.player.getYaw() - PlayerManipulator.getHeadMovements().peek().getDestinationAngle());
                // AllSeeingEye.LOGGER.info("yaw " + client.player.getYaw() + " PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() " + PlayerManipulator.getHeadMovements().peek().getDestination().getDegrees() + " difference " + difference);

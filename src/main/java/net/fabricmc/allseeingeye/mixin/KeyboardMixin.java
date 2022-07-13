@@ -1,5 +1,6 @@
 package net.fabricmc.allseeingeye.mixin;
 
+import net.fabricmc.allseeingeye.utils.ProcessType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.allseeingeye.AllSeeingEye;
@@ -24,6 +25,9 @@ public class KeyboardMixin {
 			ordinal = 0))
 	private boolean onPressingForward(KeyboardInput input) {
 		input.pressingForward = input.pressingForward || PlayerManipulator.hasDirection(MovementDirection.FORWARD);
+		if (PlayerManipulator.getCurrentProcess() != null && PlayerManipulator.getCurrentProcess() != ProcessType.HORIZONTAL) {
+			return false;
+		}
 		return input.pressingForward;
 	}
 
@@ -34,6 +38,9 @@ public class KeyboardMixin {
 			ordinal = 0))
 	private boolean onPressingBack(KeyboardInput input) {
 		input.pressingBack = input.pressingBack;
+		if (PlayerManipulator.getCurrentProcess() != null) {
+			return false;
+		}
 		return !PlayerManipulator.hasDirection(MovementDirection.FORWARD) && input.pressingBack ;
 	}
 
@@ -44,6 +51,9 @@ public class KeyboardMixin {
 			ordinal = 0))
 	private boolean onPressingLeft(KeyboardInput input) {
 		input.pressingLeft = input.pressingLeft;
+		if (PlayerManipulator.getCurrentProcess() != null) {
+			return false;
+		}
 		return !PlayerManipulator.hasDirection(MovementDirection.FORWARD) && input.pressingLeft;
 	}
 
@@ -54,7 +64,10 @@ public class KeyboardMixin {
 			ordinal = 0))
 	private boolean onPressingRight(KeyboardInput input) {
 		input.pressingRight = input.pressingRight;
-		return !PlayerManipulator.hasDirection(MovementDirection.FORWARD) && input.pressingRight;
+		if (PlayerManipulator.getCurrentProcess() != null) {
+			return false;
+		}
+		return !PlayerManipulator.hasDirection(MovementDirection.FORWARD)&& input.pressingRight;
 	}
 
 }

@@ -21,10 +21,12 @@ import java.util.HashSet;
 
 public class BaseBlockEye extends BaseEye {
     HashSet<Block> targets;
+    private int minDepth;
 
-    public BaseBlockEye(Settings settings,HashSet<Block> targets, int levelsRequired) {
+    public BaseBlockEye(Settings settings,HashSet<Block> targets, int levelsRequired, int minDepth) {
         super(settings,levelsRequired);
         this.targets = targets;
+        this.minDepth = minDepth;
     }
 
     @Override
@@ -40,4 +42,9 @@ public class BaseBlockEye extends BaseEye {
         }
         return TypedActionResult.fail(playerEntity.getStackInHand(hand));
     }
+
+    public int getMinDepth() {
+        return minDepth;
+    }
+
 }

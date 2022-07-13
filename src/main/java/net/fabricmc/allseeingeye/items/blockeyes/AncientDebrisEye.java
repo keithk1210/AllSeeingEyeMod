@@ -8,6 +8,6 @@ import java.util.HashSet;
 public class AncientDebrisEye extends BaseBlockEye {
 
     public AncientDebrisEye(Settings settings) {
-        super(settings,new HashSet<>(Arrays.asList(Blocks.ANCIENT_DEBRIS)),30);
+        super(settings,new HashSet<>(Arrays.asList(Blocks.ANCIENT_DEBRIS)),30,20);
     }
 }

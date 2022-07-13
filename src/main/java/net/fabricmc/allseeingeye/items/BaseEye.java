@@ -1,6 +1,7 @@
 package net.fabricmc.allseeingeye.items;
 
 import net.fabricmc.allseeingeye.AllSeeingEye;
+import net.fabricmc.allseeingeye.items.blockeyes.BaseBlockEye;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -32,23 +33,36 @@ public class BaseEye extends Item {
         Iterator<ItemStack> itemStackIterator = playerEntity.getArmorItems().iterator();
         boolean hasAllSeeingBoots = false;
         boolean hasEnoughXP = false;
+        boolean highEnough = false;
         while (itemStackIterator.hasNext()) {
             ItemStack item = itemStackIterator.next();
             if (item.getItem().toString().equals(ItemRegistrationHelper.ALL_SEEING_BOOTS.toString())) {
                 AllSeeingEye.LOGGER.info("Player was wearing all seeing boots");
-                if (!item.getEnchantments().contains(Enchantments.FROST_WALKER)) {
-                    item.addEnchantment(Enchantments.FROST_WALKER,2);
-                }
                 hasAllSeeingBoots = true;
             }
+        }
+
+        if (!hasAllSeeingBoots) {
+            playerEntity.sendMessage(Text.literal("Without a pair of all-seeing boots, the Eye is blind."));
+            return false;
         }
 
         if (!playerEntity.getAbilities().creativeMode && playerEntity.experienceLevel >= levelsRequired) {
             hasEnoughXP = true;
             playerEntity.addExperienceLevels(-levelsRequired);
+        } else {
+            playerEntity.sendMessage(Text.literal("The Eye believes you are too weak. It requires " + levelsRequired + " XP levels"));
+            return false;
         }
 
-        if (hasAllSeeingBoots && hasEnoughXP) {
+        if (this instanceof BaseBlockEye && playerEntity.getBlockY() <= ((BaseBlockEye) this).getMinDepth()) {
+            playerEntity.sendMessage(Text.literal("The Eye cannot see at such depths."));
+            return false;
+        } else {
+            highEnough = true;
+        }
+
+        if (hasAllSeeingBoots && hasEnoughXP && highEnough) {
             playerEntity.playSound(SoundEvents.BLOCK_END_PORTAL_SPAWN, 1.0F, 1.0F);
             playerEntity.sendMessage(Text.literal("The All-Seeing Eye overtakes you..."));
             playerEntity.sendMessage(Text.literal("Press \"R\" to stop"));
@@ -58,14 +72,6 @@ public class BaseEye extends Item {
                 playerEntity.getStackInHand(hand).decrement(1);
             }
             return true;
-        } else if (!hasAllSeeingBoots && hasEnoughXP) {
-            playerEntity.sendMessage(Text.literal("Without a pair of all-seeing boots, the Eye is blind."));
-            return false;
-        } else if (hasAllSeeingBoots && !hasEnoughXP) {
-            playerEntity.sendMessage(Text.literal("The Eye believes you are too weak. It requires " + levelsRequired + " XP levels"));
-        } else {
-            playerEntity.sendMessage(Text.literal("The Eye does not service those without a pair of all-seeing boots and those without enough XP."));
-            return false;
         }
         return false;
     }

@@ -7,6 +7,7 @@ import net.fabricmc.allseeingeye.utils.ProcessType;
 import net.fabricmc.allseeingeye.utils.SearchType;
 import net.fabricmc.allseeingeye.utils.Utils;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.enchantment.FrostWalkerEnchantment;
@@ -71,16 +72,30 @@ public class PlayerManipulator {
 
     public static void beginProcess(PlayerEntity playerEntity, BlockPos foundBlock, SearchType searchType) {
         PlayerManipulator.setPlayer(playerEntity);
+        playerEntity.setPos(playerEntity.getBlockX() + .5, playerEntity.getBlockY(), playerEntity.getBlockZ() + .5);
         setCurrentSearchType(searchType);
         PlayerManipulator.setDestination(foundBlock); //add one to 1 because the player will end up on top of the block
+        PlayerManipulator.resetYaw();
         if (searchType == SearchType.BLOCK) {
             PlayerManipulator.setCurrentProcess(ProcessType.ANGULAR_YAW);
+            playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOW_FALLING,Integer.MAX_VALUE,1,false,false,false));
+            playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WATER_BREATHING,Integer.MAX_VALUE,1,false,false,false));
+            playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE,Integer.MAX_VALUE,1,false,false,false));
         } else if (searchType == SearchType.STRUCTURE) {
             PlayerManipulator.setCurrentProcess(ProcessType.VERTICAL_FLOAT);
             playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION,Integer.MAX_VALUE,10,false,false,false));
         }
     }
 
+    public static void resetYaw() {
+        if (player.getYaw() > 180) {
+            player.setYaw(player.getYaw() % 180);
+        } else if (player.getYaw() < -180) {
+            float yaw = player.getYaw();
+            player.setYaw( -(yaw % 180));
+        }
+        AllSeeingEye.LOGGER.info("Player yaw reset to: " + player.getYaw());
+    }
     public static void clearToggled() {
         toggled.clear();
     }
@@ -149,10 +164,12 @@ public class PlayerManipulator {
         if (currentProcess == ProcessType.HORIZONTAL && player != null && destination != null && headMovements.size() > 0) {
             double angle = headMovements.peek().getDestinationAngle();
             if (getCurrentSearchType() == SearchType.BLOCK) {
-                checkIfBlocksInTheWay();
+                checkIfBlockBelow(Blocks.LAVA.getDefaultState(),Blocks.OBSIDIAN.getDefaultState());
+                checkIfBlockBelow(Blocks.WATER.getDefaultState(),Blocks.PACKED_ICE.getDefaultState());
                 if (Double.compare(angle, CardinalDirection.EAST.getDegrees()) == 0 || Double.compare(angle, CardinalDirection.WEST.getDegrees()) == 0) {
                     //for block search
                     if (player.getBlockX() == destination.getX()) {
+                        player.setPos(player.getBlockX() + .5, player.getBlockY(), player.getBlockZ() + .5);
                         toggled.clear();
                         PlayerManipulator.getHeadMovements().remove();
                         log("Toggled was cleared");
@@ -167,6 +184,7 @@ public class PlayerManipulator {
                     }
                 } else if (Double.compare(angle, CardinalDirection.NORTH.getDegrees()) == 0 || Double.compare(angle, CardinalDirection.SOUTH.getDegrees()) == 0) {
                     if (player.getBlockZ() == destination.getZ()) {
+                        player.setPos(player.getBlockX() + .5, player.getBlockY(), player.getBlockZ() + .5);
                         toggled.clear();
                         PlayerManipulator.getHeadMovements().remove();
                         log("Toggled was cleared");
@@ -234,6 +252,8 @@ public class PlayerManipulator {
 
     public static void checkIfVerticalPositionReached() {
         if (currentProcess == ProcessType.VERTICAL_DOWN) {
+            checkIfBlockBelow(Blocks.LAVA.getDefaultState(),Blocks.OBSIDIAN.getDefaultState());
+            checkIfBlockBelow(Blocks.WATER.getDefaultState(),Blocks.PACKED_ICE.getDefaultState());
             if (player.getBlockY() == destination.getY() + 1) { //arrives at the block above the destination
                 player.sendMessage(Text.literal("Arrived at: " + player.getBlockX() + ", " + player.getBlockY() + ", " + player.getBlockZ()));
                 endAllProcesses();
@@ -251,6 +271,46 @@ public class PlayerManipulator {
             setCurrentProcess(ProcessType.VERTICAL_DOWN);
         } else if (player.getBlockY() < destination.getY()) {
             setCurrentProcess(ProcessType.VERTICAL_UP);
+        }
+    }
+
+    public static void checkIfBlockBelow(BlockState block, BlockState replaceWith) {
+        if (getCurrentProcess() == ProcessType.VERTICAL_DOWN) {
+            if (player.getWorld().getBlockState(player.getBlockPos().down()).equals(block)) {
+                BlockPos playerBlockPos = player.getBlockPos();
+                player.getWorld().setBlockState(player.getBlockPos().down(), Blocks.AIR.getDefaultState());
+                if (player.getWorld().getBlockState(playerBlockPos.down().north()).equals(block)) { //N
+                    player.getWorld().setBlockState(player.getBlockPos().down().north(), replaceWith);
+                }
+                if (player.getWorld().getBlockState(playerBlockPos.down().east()).equals(block)) { //E
+                    player.getWorld().setBlockState(player.getBlockPos().down().east(), replaceWith);
+                }
+                if (player.getWorld().getBlockState(playerBlockPos.down().south()).equals(block)) { //S
+                    player.getWorld().setBlockState(player.getBlockPos().down().south(), replaceWith);
+                }
+                if (player.getWorld().getBlockState(playerBlockPos.down().west()).equals(block)) { //w
+                    player.getWorld().setBlockState(player.getBlockPos().down().west(), replaceWith);
+                }
+
+            }
+        } else if (getCurrentProcess() == ProcessType.HORIZONTAL) {
+            if (player.getWorld().getBlockState(player.getBlockPos().down()).equals(block)) {
+                BlockPos playerBlockPos = player.getBlockPos();
+                player.getWorld().setBlockState(player.getBlockPos().down(), replaceWith);
+                if (player.getWorld().getBlockState(playerBlockPos.down().north()).equals(block)) { //N
+                    player.getWorld().setBlockState(player.getBlockPos().down().north(), replaceWith);
+                }
+                if (player.getWorld().getBlockState(playerBlockPos.down().east()).equals(block)) { //E
+                    player.getWorld().setBlockState(player.getBlockPos().down().east(), replaceWith);
+                }
+                if (player.getWorld().getBlockState(playerBlockPos.down().south()).equals(block)) { //S
+                    player.getWorld().setBlockState(player.getBlockPos().down().south(), replaceWith);
+                }
+                if (player.getWorld().getBlockState(playerBlockPos.down().west()).equals(block)) { //w
+                    player.getWorld().setBlockState(player.getBlockPos().down().west(), replaceWith);
+                }
+            }
+
         }
     }
 
