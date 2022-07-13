@@ -1,11 +1,12 @@
 TODO:
 
-check if loot tables work
+also restrict user input (player can still move during angular yaw)
+the Eye should suggest a shovel and a pick for the block eyes
+
 
 
 ideas:
 -using the eye drains XP
--or some other fuel source
 -add another block that dissapears several seconds after the eye creates it
 
 
@@ -15,7 +16,6 @@ remove:
 
 debug:
 
--frost walker being added to the player when they use an eye
 -diamond eye has a preference for deepslate diamond?
 -how to figure out what to do when there are blocks in the way
 
